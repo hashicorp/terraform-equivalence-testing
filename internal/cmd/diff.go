@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/mitchellh/cli"
 	"strings"
+
+	"github.com/mitchellh/cli"
 
 	"github.com/hashicorp/terraform-equivalence-testing/internal/terraform"
 	"github.com/hashicorp/terraform-equivalence-testing/internal/tests"

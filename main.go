@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	cli "github.com/mitchellh/cli"
 	"os"
+
+	cli "github.com/mitchellh/cli"
 
 	"github.com/hashicorp/terraform-equivalence-testing/internal/cmd"
 )
