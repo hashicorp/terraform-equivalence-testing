@@ -287,9 +287,7 @@ func TestStripJson(t *testing.T) {
 		t.Run(fmt.Sprintf("%d", ix), func(t *testing.T) {
 			actual, err := Strip(tc.fields, tc.input)
 			if err != nil {
-				t.Logf("call to StripJson failed unexpectedly: %v", err)
-				t.Fail()
-				return
+				t.Fatalf("call to StripJson failed unexpectedly: %v", err)
 			}
 
 			actualStr, err := json.Marshal(actual)
@@ -303,8 +301,7 @@ func TestStripJson(t *testing.T) {
 			}
 
 			if string(actualStr) != string(expectedStr) {
-				t.Logf("actual does not equal expected\nexpected:\n\t%s\nactual:\n\t%s\n", string(expectedStr), string(actualStr))
-				t.Fail()
+				t.Fatalf("actual does not equal expected\nexpected:\n\t%s\nactual:\n\t%s\n", string(expectedStr), string(actualStr))
 			}
 		})
 	}
