@@ -58,7 +58,7 @@ func (cmd *diffCommand) Run(args []string) int {
 		if err != nil {
 			failedTests++
 			if tfErr, ok := err.(terraform.Error); ok {
-				cmd.ui.Output(fmt.Sprintf("[%s]: %s", test.Name, tfErr.Error()))
+				cmd.ui.Output(fmt.Sprintf("[%s]: %s", test.Name, tfErr))
 				continue
 			}
 			cmd.ui.Output(fmt.Sprintf("[%s]: unknown error (%v)", test.Name, err))
