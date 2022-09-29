@@ -1,7 +1,7 @@
 # terraform-equivalence-testing
 
 The `terraform-equivalence-testing` repository provides a tool for comparing and
-updating apply and plan outputs and state files produced by Terraform 
+updating state files, plan files, and the JSON output of the `apply` command, produced by Terraform 
 executions.
 
 The framework uses a set of golden files to track outputs and verify changes
