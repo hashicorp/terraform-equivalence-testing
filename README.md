@@ -5,7 +5,7 @@ updating apply and plan outputs and state files produced by Terraform
 executions.
 
 The framework uses a set of golden files to track outputs and verify changes
-across different terraform versions, provider versions, or even different 
+across different Terraform versions, provider versions, or even different 
 Terraform configurations.
 
 ## Contents
