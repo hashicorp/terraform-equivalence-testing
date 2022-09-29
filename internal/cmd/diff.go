@@ -39,6 +39,13 @@ func (cmd *diffCommand) Run(args []string) int {
 		return 1
 	}
 
+	tf, err := terraform.New(flags.TerraformBinaryPath)
+	if err != nil {
+		cmd.ui.Error(err.Error())
+		return 1
+	}
+	cmd.ui.Output(fmt.Sprintf("Finding diffs in equivalence tests using Terraform v%s with command `%s`", tf.Version(), flags.TerraformBinaryPath))
+
 	testCases, err := tests.ReadFrom(flags.TestingFilesDirectory)
 	if err != nil {
 		cmd.ui.Error(err.Error())
@@ -50,7 +57,6 @@ func (cmd *diffCommand) Run(args []string) int {
 	testsWithDiffs := 0
 	failedTests := 0
 
-	tf := terraform.New(flags.TerraformBinaryPath)
 	for _, test := range testCases {
 		cmd.ui.Output(fmt.Sprintf("[%s]: starting...", test.Name))
 
@@ -112,7 +118,7 @@ func (cmd *diffCommand) Run(args []string) int {
 	}
 
 	if failedTests > 0 {
-		cmd.ui.Output(fmt.Sprintf("\t%d tests failed.", failedTests))
+		cmd.ui.Output(fmt.Sprintf("\t%d test(s) failed.", failedTests))
 	}
 
 	return 0

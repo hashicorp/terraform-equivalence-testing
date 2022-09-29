@@ -2,12 +2,11 @@ package tests
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"path"
 	"path/filepath"
 
-	"github.com/nsf/jsondiff"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/hashicorp/terraform-equivalence-testing/internal/files"
 	strip "github.com/hashicorp/terraform-equivalence-testing/internal/json"
@@ -70,7 +69,7 @@ func (output TestOutput) ComputeDiff(goldens string) (map[string]string, error) 
 	}
 
 	ret := map[string]string{}
-	for file, contents := range files {
+	for file, new := range files {
 		target := path.Join(goldens, output.Test.Name, file)
 
 		golden, err := os.ReadFile(target)
@@ -78,11 +77,6 @@ func (output TestOutput) ComputeDiff(goldens string) (map[string]string, error) 
 			if !os.IsNotExist(err) {
 				return nil, err
 			}
-		}
-
-		actual, err := json.MarshalIndent(contents, "", "  ")
-		if err != nil {
-			return nil, err
 		}
 
 		if golden == nil {
@@ -93,18 +87,18 @@ func (output TestOutput) ComputeDiff(goldens string) (map[string]string, error) 
 			continue
 		}
 
-		opts := jsondiff.DefaultJSONOptions()
-		opts.SkipMatches = true
-		opts.Indent = "  "
+		// Get raw text into a JSON-like Go struct before we compare to contents
+		// as this gives better outputs.
+		var old interface{}
+		if err := json.Unmarshal(golden, &old); err != nil {
+			return nil, err
+		}
 
-		diff, pretty := jsondiff.Compare(golden, actual, &opts)
-		switch diff {
-		case jsondiff.BothArgsAreInvalidJson, jsondiff.SecondArgIsInvalidJson, jsondiff.FirstArgIsInvalidJson:
-			return nil, errors.New(pretty)
-		case jsondiff.FullMatch:
+		diff := cmp.Diff(old, new)
+		if len(diff) == 0 {
 			ret[file] = NoChange
-		default:
-			ret[file] = pretty
+		} else {
+			ret[file] = diff
 		}
 	}
 	return ret, nil

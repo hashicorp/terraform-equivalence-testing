@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	cli "github.com/mitchellh/cli"
+	"github.com/mitchellh/cli"
 
 	"github.com/hashicorp/terraform-equivalence-testing/internal/cmd"
 )

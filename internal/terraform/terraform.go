@@ -1,10 +1,13 @@
 package terraform
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/hashicorp/terraform-exec/tfexec"
 )
 
 // Terraform is an interface that can execute a single equivalence test within a
@@ -12,24 +15,55 @@ import (
 //
 // We hold this in an interface, so we can mock it for testing purposes.
 type Terraform interface {
+	// ExecuteTest executes a series of terraform commands in order and returns the
+	// output of the apply and plan steps, the Terraform state, and any additionally
+	// requested files.
 	ExecuteTest(directory string, includeFiles []string) (map[string]interface{}, error)
+
+	// Version returns the version of the underlying Terraform binary.
+	Version() string
 }
 
 // New returns a Terraform compatible struct that executes the tests using the
 // Terraform binary provided in the argument.
-func New(binary string) Terraform {
-	return &terraform{
-		binary: binary,
+func New(binary string) (Terraform, error) {
+
+	// First, sanity check binary actually points to a Terraform binary file.
+	//
+	// We do this by fetching the version using tfexec. tfexec tries to be
+	// clever and look up cached provider versions as well, but we're not
+	// interested in this, so we just set the working directory to be the
+	// current directory and tfexec just won't find any terraform or provider
+	// files.
+	//
+	// Note, ideally we could actually just tfexec for everything. tfexec
+	// doesn't (yet) support returning JSON files from the apply command so for
+	// now we do the rest ourselves. Something to revisit in the future.
+	tf, err := tfexec.NewTerraform(".", binary)
+	if err != nil {
+		return nil, err
 	}
+
+	version, _, err := tf.Version(context.Background(), true)
+	if err != nil {
+		return nil, err
+	}
+
+	return &terraform{
+		binary:  binary,
+		version: version.String(),
+	}, nil
 }
 
 type terraform struct {
-	binary string
+	binary  string
+	version string
 }
 
-// ExecuteTest executes a series of terraform commands in order and returns the
-// output of the apply and plan steps, the Terraform state, and any additionally
-// requested files.
+func (t *terraform) Version() string {
+	return t.version
+}
+
 func (t *terraform) ExecuteTest(directory string, includeFiles []string) (map[string]interface{}, error) {
 	wd, err := os.Getwd()
 	if err != nil {

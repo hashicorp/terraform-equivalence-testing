@@ -40,6 +40,13 @@ func (cmd *updateCommand) Run(args []string) int {
 		return 1
 	}
 
+	tf, err := terraform.New(flags.TerraformBinaryPath)
+	if err != nil {
+		cmd.ui.Error(err.Error())
+		return 1
+	}
+	cmd.ui.Output(fmt.Sprintf("Finding diffs in equivalence tests using Terraform v%s with command `%s`", tf.Version(), flags.TerraformBinaryPath))
+
 	testCases, err := tests.ReadFrom(flags.TestingFilesDirectory)
 	if err != nil {
 		cmd.ui.Error(err.Error())
@@ -50,7 +57,6 @@ func (cmd *updateCommand) Run(args []string) int {
 	successfulTests := 0
 	failedTests := 0
 
-	tf := terraform.New(flags.TerraformBinaryPath)
 	for _, test := range testCases {
 		cmd.ui.Output(fmt.Sprintf("[%s]: starting...", test.Name))
 
@@ -58,7 +64,7 @@ func (cmd *updateCommand) Run(args []string) int {
 		if err != nil {
 			failedTests++
 			if tfErr, ok := err.(terraform.Error); ok {
-				cmd.ui.Output(fmt.Sprintf("[%s]: %s", test.Name, tfErr.Error()))
+				cmd.ui.Output(fmt.Sprintf("[%s]: %s", test.Name, tfErr))
 				continue
 			}
 			cmd.ui.Output(fmt.Sprintf("[%s]: unknown error (%v)", test.Name, err))
@@ -84,7 +90,7 @@ func (cmd *updateCommand) Run(args []string) int {
 		cmd.ui.Output(fmt.Sprintf("\t%d test(s) were successfully updated.", successfulTests))
 	}
 	if failedTests > 0 {
-		cmd.ui.Output(fmt.Sprintf("\t%d tests failed to update.", failedTests))
+		cmd.ui.Output(fmt.Sprintf("\t%d test(s) failed to update.", failedTests))
 	}
 
 	return 0
