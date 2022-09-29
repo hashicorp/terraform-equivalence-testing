@@ -45,7 +45,7 @@ func (cmd *updateCommand) Run(args []string) int {
 		cmd.ui.Error(err.Error())
 		return 1
 	}
-	cmd.ui.Output(fmt.Sprintf("Finding diffs in equivalence tests using Terraform v%s with command `%s`", tf.Version(), flags.TerraformBinaryPath))
+	cmd.ui.Output(fmt.Sprintf("Updating golden files using Terraform v%s with command `%s`", tf.Version(), flags.TerraformBinaryPath))
 
 	testCases, err := tests.ReadFrom(flags.TestingFilesDirectory)
 	if err != nil {
