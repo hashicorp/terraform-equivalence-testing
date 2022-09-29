@@ -141,7 +141,7 @@ The following fields are ignored by default:
                          state as it will create noise in our golden file diffs.
 - In `plan.json`:
   - `terraform_version`: The removes the Terraform version information from the
-                         state as it will create noise in our golden file diffs.
+                         plan as it will create noise in our golden file diffs.
 
 If you need any other fields removed, either from the default golden files or
 additional golden files, then you can specify them here as part of the test
