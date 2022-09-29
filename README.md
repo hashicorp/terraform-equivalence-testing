@@ -130,8 +130,8 @@ considered golden files. **Any additional files must be JSON formatted.**
 The following fields are ignored by default:
 
 - In `apply.json`:
-  - `0`: This is the first entry in the JSON list that compromises `apply.json`,
-         it contains lots of execution specific information such as timing and 
+  - `0`: This is the first entry in the JSON list that comprises `apply.json`.
+         It contains lots of execution specific information such as timing and 
          Terraform version which will change on every execution.
   - `*.@timestamp`: This removes the `@timestamp` field from every entry in the 
                     `apply.json` as the timestamp will change on every 
