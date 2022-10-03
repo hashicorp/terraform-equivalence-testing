@@ -2,10 +2,11 @@ package terraform
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/hashicorp/terraform-equivalence-testing/internal/files"
 
 	"github.com/hashicorp/terraform-exec/tfexec"
 )
@@ -18,7 +19,7 @@ type Terraform interface {
 	// ExecuteTest executes a series of terraform commands in order and returns the
 	// output of the apply and plan steps, the Terraform state, and any additionally
 	// requested files.
-	ExecuteTest(directory string, includeFiles []string) (map[string]interface{}, error)
+	ExecuteTest(directory string, includeFiles []string) (map[string]*files.File, error)
 
 	// Version returns the version of the underlying Terraform binary.
 	Version() string
@@ -64,7 +65,7 @@ func (t *terraform) Version() string {
 	return t.version
 }
 
-func (t *terraform) ExecuteTest(directory string, includeFiles []string) (map[string]interface{}, error) {
+func (t *terraform) ExecuteTest(directory string, includeFiles []string) (map[string]*files.File, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -79,34 +80,31 @@ func (t *terraform) ExecuteTest(directory string, includeFiles []string) (map[st
 		return nil, err
 	}
 
-	if err := t.plan(); err != nil {
+	savedFiles := map[string]*files.File{}
+	if savedFiles["plan"], err = t.plan(); err != nil {
 		return nil, err
 	}
-
-	files := map[string]interface{}{}
-	if files["apply.json"], err = t.apply(); err != nil {
+	if savedFiles["apply.json"], err = t.apply(); err != nil {
 		return nil, err
 	}
-	if files["state.json"], err = t.showState(); err != nil {
+	if savedFiles["state.json"], err = t.showState(); err != nil {
 		return nil, err
 	}
-	if files["plan.json"], err = t.showPlan(); err != nil {
+	if savedFiles["plan.json"], err = t.showPlan(); err != nil {
 		return nil, err
 	}
 
 	for _, includeFile := range includeFiles {
-		var data interface{}
 		raw, err := os.ReadFile(includeFile)
 		if err != nil {
 			return nil, fmt.Errorf("could not read additional file (%s): %v", includeFile, err)
 		}
-		if err := json.Unmarshal(raw, &data); err != nil {
+		if savedFiles[includeFile], err = files.NewFile(includeFile, raw); err != nil {
 			return nil, fmt.Errorf("could not unmarshal additional file (%s): %v", includeFile, err)
 		}
-		files[includeFile] = data
 	}
 
-	return files, nil
+	return savedFiles, nil
 }
 
 func (t *terraform) init() error {
@@ -117,36 +115,51 @@ func (t *terraform) init() error {
 	return nil
 }
 
-func (t *terraform) plan() error {
-	_, err := run(exec.Command(t.binary, "plan", "-out=equivalence_test_plan"), "plan")
+func (t *terraform) plan() (*files.File, error) {
+	capture, err := run(exec.Command(t.binary, "plan", "-out=equivalence_test_plan", "-no-color"), "plan")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return files.NewRawFile(capture.ToString()), nil
 }
 
-func (t *terraform) apply() (interface{}, error) {
+func (t *terraform) apply() (*files.File, error) {
 	capture, err := run(exec.Command(t.binary, "apply", "-json", "equivalence_test_plan"), "apply")
 	if err != nil {
 		return nil, err
 	}
-	return capture.ToJson(true)
+
+	json, err := capture.ToJson(true)
+	if err != nil {
+		return nil, err
+	}
+	return files.NewJsonFile(json), nil
 }
 
-func (t *terraform) showPlan() (interface{}, error) {
+func (t *terraform) showPlan() (*files.File, error) {
 	capture, err := run(exec.Command(t.binary, "show", "-json", "equivalence_test_plan"), "show plan")
 	if err != nil {
 		return nil, err
 	}
-	return capture.ToJson(false)
+
+	json, err := capture.ToJson(false)
+	if err != nil {
+		return nil, err
+	}
+	return files.NewJsonFile(json), nil
 }
 
-func (t *terraform) showState() (interface{}, error) {
+func (t *terraform) showState() (*files.File, error) {
 	capture, err := run(exec.Command(t.binary, "show", "-json"), "show state")
 	if err != nil {
 		return nil, err
 	}
-	return capture.ToJson(false)
+
+	json, err := capture.ToJson(false)
+	if err != nil {
+		return nil, err
+	}
+	return files.NewJsonFile(json), nil
 }
 
 func run(cmd *exec.Cmd, command string) (*capture, error) {
