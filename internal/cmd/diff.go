@@ -46,7 +46,7 @@ func (cmd *diffCommand) Run(args []string) int {
 	}
 	cmd.ui.Output(fmt.Sprintf("Finding diffs in equivalence tests using Terraform v%s with command `%s`", tf.Version(), flags.TerraformBinaryPath))
 
-	testCases, err := tests.ReadFrom(flags.TestingFilesDirectory)
+	testCases, err := tests.ReadFrom(flags.TestingFilesDirectory, flags.TestFilters...)
 	if err != nil {
 		cmd.ui.Error(err.Error())
 		return 1

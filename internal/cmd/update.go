@@ -47,7 +47,7 @@ func (cmd *updateCommand) Run(args []string) int {
 	}
 	cmd.ui.Output(fmt.Sprintf("Updating golden files using Terraform v%s with command `%s`", tf.Version(), flags.TerraformBinaryPath))
 
-	testCases, err := tests.ReadFrom(flags.TestingFilesDirectory)
+	testCases, err := tests.ReadFrom(flags.TestingFilesDirectory, flags.TestFilters...)
 	if err != nil {
 		cmd.ui.Error(err.Error())
 		return 1
