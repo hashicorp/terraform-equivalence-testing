@@ -24,7 +24,7 @@ type updateCommand struct {
 
 func (cmd *updateCommand) Help() string {
 	return strings.TrimSpace(`
-Usage: terraform-equivalence-testing update --goldens=examples/example_golden_files --tests=examples/example_test_cases [--binary=terraform]
+Usage: terraform-equivalence-testing update --goldens=examples/example_golden_files --tests=examples/example_test_cases [--binary=terraform] [--filters=complex_resource,simple_resource]
 
 Update the equivalence test golden files.
 

@@ -24,7 +24,7 @@ type diffCommand struct {
 
 func (cmd *diffCommand) Help() string {
 	return strings.TrimSpace(`
-Usage: terraform-equivalence-testing diff --goldens=examples/example_golden_files --tests=examples/example_test_cases [--binary=terraform]
+Usage: terraform-equivalence-testing diff --goldens=examples/example_golden_files --tests=examples/example_test_cases [--binary=terraform] [--filters=complex_resource,simple_resource]
 
 Compare and report the diff between a fresh run of the equivalence tests and the golden files.
 
