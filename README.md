@@ -92,10 +92,12 @@ Example golden directory structure:
 - `my_golden_files/`
   - `test_case_one/`
     - `apply.json`
+    - `plan`
     - `plan.json`
     - `state.json`
   - `test_case_two/`
       - `apply.json`
+      - `plan`
       - `plan.json`
       - `state.json`
 
@@ -115,15 +117,19 @@ Currently, the test specification has two fields:
 
 ### IncludeFiles
 
-The `apply.json`, `state.json`, and `plan.json` golden files are included by all
-tests automatically.
+The `apply.json`, `state.json`, `plan.json`, and `plan`, golden files are 
+included by all tests automatically.
 
-- The `apply.json` file contains the output of `terraform apply -json equivalence_test_plan`.
+- The `apply.json` file contains the output of 
+  `terraform apply -json equivalence_test_plan`.
 - The `state.json` file contains the output of `terraform show -json`.
-- The `plan.json` file contains the output of `terraform show -json equivalence_test_plan`.
+- The `plan.json` file contains the output of
+  `terraform show -json equivalence_test_plan`.
+- The `plan` file contains the raw human-readable captured output of the 
+  original `terraform plan` command.
 
 You can then use this field to specify any additional files that should also be 
-considered golden files. **Any additional files must be JSON formatted.**
+considered golden files.
 
 ### IgnoreFields
 
@@ -146,3 +152,6 @@ The following fields are ignored by default:
 If you need any other fields removed, either from the default golden files or
 additional golden files, then you can specify them here as part of the test
 specification.
+
+Note, that you can only remove fields from JSON files. Other file types will not
+be included when processing the `IgnoreFields` inputs.
