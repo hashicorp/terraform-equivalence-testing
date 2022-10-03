@@ -94,7 +94,7 @@ func (cmd *diffCommand) Run(args []string) int {
 				cmd.ui.Output(fmt.Sprintf("[%s]: %s had no diffs", test.Name, file))
 			default:
 				changeCount++
-				cmd.ui.Output(fmt.Sprintf("[%s]: %s had diffs:\n%s", test.Name, file, diff))
+				cmd.ui.Output(fmt.Sprintf("[%s]: %s had diffs (-want +got):\n%s", test.Name, file, diff))
 			}
 		}
 
