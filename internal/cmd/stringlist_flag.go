@@ -7,7 +7,7 @@ import "strings"
 type StringList []string
 
 func (stringlist *StringList) String() string {
-	return ""
+	return "stringlist"
 }
 
 func (stringlist *StringList) Set(s string) error {
