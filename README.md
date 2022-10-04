@@ -188,7 +188,8 @@ Each command has 5 required fields:
 - `arguments`
 - `capture_output`
 - `output_file_name`
-- `has_strucutred_json_output`
+- `has_json_output`
+- `streams_json_output`
 
 `name` (**required**) is a string only used for logging when reporting which 
 commands might have failed, so you should make it unique and descriptive enough
@@ -207,6 +208,11 @@ file for diffing or updating.
 that sets the filename that should be used for the output. If `capture_output` 
 is `false`, this field is ignored.
 
+`has_json_output` (**optional**, defaults to `false`) is a boolean that tells 
+the equivalence tests that the output of this command will be in JSON format.
+The framework will only use the `IgnoreFields` specification on JSON formatted
+files so if you wish to remove any part of the output this must be true.
+
 `streams_json_output` (**optional**, defaults to `false`) is a boolean
 that tells the equivalence tests that the output is in the "structured JSON" 
 format. Some Terraform commands, such as `terraform apply -json`, stream a list
@@ -214,7 +220,7 @@ of individual JSON objects to the output. This form of output is not a valid
 JSON object when reading the output as a whole. When this value is true the 
 framework will convert the output into a valid JSON object by replacing any `\n`
 characters with `,` and putting the entire output in between `[` and `]`. If
-`capture_output` is `false`, this field is ignored.
+`capture_output` or `has_json_output` is `false`, this field is ignored.
 
 #### Examples
 
@@ -231,14 +237,17 @@ the custom `commands` entry in the test specification.
     },
     {
       "name": "plan",
-      "arguments": ["plan", "-out=equivalence_test_plan"],
-      "capture_output": false
+      "arguments": ["plan", "-out=equivalence_test_plan", "-no-color"],
+      "capture_output": true,
+      "output_file_name": "plan",
+      "has_json_output": false
     },
     {
       "name": "apply",
       "arguments": ["apply", "-json", "equivalence_test_plan"],
       "capture_output": true,
       "output_file_name": "apply.json",
+      "has_json_output": true,
       "streams_json_output": true
     },
     {
@@ -246,6 +255,7 @@ the custom `commands` entry in the test specification.
       "arguments": ["show", "-json"],
       "capture_output": true,
       "output_file_name": "state.json",
+      "has_json_output": true,
       "streams_json_output": false
     },
     {
@@ -253,6 +263,7 @@ the custom `commands` entry in the test specification.
       "arguments": ["show", "-json", "equivalence_test_plan"],
       "capture_output": true,
       "output_file_name": "plan.json",
+      "has_json_output": true,
       "streams_json_output": false
     }
   ]

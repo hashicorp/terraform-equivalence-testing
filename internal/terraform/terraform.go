@@ -34,6 +34,16 @@ type Command struct {
 	// This field is ignored if CaptureOutput is false.
 	OutputFileName string `json:"output_file_name"`
 
+	// HasJsonOutput tells the framework the output is going to be in JSON
+	// format.
+	//
+	// This means that `IgnoreFields` section of the test specification can be
+	// applied to the output of this command. It also provides a better diffing
+	// output as JSON is easier to diff and display than raw strings.
+	//
+	// This field is ignored if CaptureOutput is false.
+	HasJsonOutput bool `json:"has_json_output"`
+
 	// StreamsJsonOutput tells the framework the output isn't going to arrive in
 	// pure JSON but as a list of structured JSON statements. In this case the
 	// framework will strip out any `\n` characters, put the output inside a
@@ -44,7 +54,8 @@ type Command struct {
 	// can be handled by the rest of the framework. An example of this is the
 	// output of an apply command: `terraform apply -json`.
 	//
-	// This field is ignored if CaptureOutput is false.
+	// This field is ignored if CaptureOutput is false or if HasJsonOutput is
+	// false.
 	StreamsJsonOutput bool `json:"streams_json_output"`
 }
 
@@ -169,16 +180,19 @@ func (t *terraform) command(command Command) (*files.File, error) {
 		return nil, nil
 	}
 
+	if !command.HasJsonOutput {
+		return files.NewRawFile(capture.ToString()), nil
+	}
+
+	var json interface{}
 	if command.StreamsJsonOutput {
-		json, err := capture.ToJson(true)
-		if err != nil {
+		if json, err = capture.ToJson(true); err != nil {
 			return nil, err
 		}
-		return files.NewJsonFile(json), nil
-	}
-	json, err := capture.ToJson(false)
-	if err != nil {
-		return nil, err
+	} else {
+		if json, err = capture.ToJson(false); err != nil {
+			return nil, err
+		}
 	}
 	return files.NewJsonFile(json), nil
 }
