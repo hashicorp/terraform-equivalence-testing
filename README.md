@@ -166,8 +166,9 @@ Each command has 5 required fields:
 - `has_strucutred_json_output`
 
 `name` (**required**) is a string only used for logging when reporting which 
-commands might have failed, so you should make it unique descriptive enough that
-it can identify which part of the test failed when consulting the error log.
+commands might have failed, so you should make it unique and descriptive enough
+that it can identify which part of the test failed when consulting the error 
+log.
 
 `arguments` (**required**) is a list of arguments that should be passed into the
 Terraform binary for this command. For example, `[plan, -out=plan_output]` would
@@ -216,14 +217,14 @@ the custom `commands` entry in the test specification.
       "streams_json_output": true
     },
     {
-      "name": "apply",
+      "name": "show_state",
       "arguments": ["show", "-json"],
       "capture_output": true,
       "output_file_name": "state.json",
       "streams_json_output": false
     },
     {
-      "name": "apply",
+      "name": "show_plan",
       "arguments": ["show", "-json", "equivalence_test_plan"],
       "capture_output": true,
       "output_file_name": "plan.json",
