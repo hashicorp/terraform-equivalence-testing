@@ -12,6 +12,7 @@ Terraform configurations.
 
 - [terraform-equivalence-testing](#terraform-equivalence-testing)
   - [Usage](#usage)
+    - [Optional Flags](#optional-flags)
   - [Execution](#execution)
   - [Directory Structure](#directory-structure)
     - [Tests Directory Structure](#tests-directory-structure)
@@ -19,13 +20,14 @@ Terraform configurations.
   - [Test Specification Format](#test-specification-format)
     - [IncludeFiles](#includefiles)
     - [IgnoreFields](#ignorefields)
+    - [Commands](#commands)
 
 ## Usage
 
 There are two available commands within the tool:
 
-- `equivalence-test update --goldens=examples/example_golden_files --tests=examples/example_test_cases --binary=terraform`
-- `equivalence-test diff --goldens=examples/example_golden_files --tests=examples/example_test_cases --binary=terraform`
+- `./terraform-equivalence-testing update --goldens=examples/example_golden_files --tests=examples/example_test_cases`
+- `./terraform-equivalence-testing diff --goldens=examples/example_golden_files --tests=examples/example_test_cases`
 
 The first command will iterate through the test cases in 
 `examples/example_test_cases`, run a set of Terraform commands while collecting
@@ -41,6 +43,21 @@ commands.
 The above commands, when executed from the root of this repository, should be
 successful using the examples provided in the `examples/` directory.
 
+### Optional Flags
+
+1. `--binary=terraform`
+    - By default, the equivalence tests will look for the first binary named
+      `terraform` within the path. 
+    - This flag can be set to modify which Terraform binary is used to execute 
+      these tests. 
+2. `--filters=simple_resource,complex_resource`
+    - By default, the equivalence tests will execute all the tests within the 
+      specified `--tests` directory.
+    - You can specify a subset of the tests to execute using this flag either by
+      repeating the flag (eg. 
+     `--filters=simple_resource --filters=complex_resource`), or with a comma
+      separated list as in the original example.
+
 ## Execution
 
 Each test case executes the following Terraform commands in order:
@@ -51,7 +68,9 @@ Each test case executes the following Terraform commands in order:
 4. `terraform show -json`
 5. `terraform show -json equivalence_test_plan`
 
-There is currently no way to execute a different set of commands.
+Consult the [Test Specification Format](#test-specification-format) section for
+a run down on how to customise these commands using the `Commands` 
+specification.
 
 ## Directory Structure
 
@@ -107,13 +126,15 @@ out the directory structure from scratch.
 
 ## Test Specification Format
 
-Currently, the test specification has two fields:
+Currently, the test specification has three fields:
 
 - `IncludeFiles`: This field specifies a set of files that should be included as 
                   golden files.
 - `IgnoreFields`: This field specifies a map between output files and JSON 
                   fields that should be ignored when reading from or writing to 
                   the golden files.
+- `Commands`: This field specifies a list of custom commands that should be 
+              executed instead of the default set of commands.
 
 ### IncludeFiles
 
@@ -155,3 +176,85 @@ specification.
 
 Note, that you can only remove fields from JSON files. Other file types will not
 be included when processing the `IgnoreFields` inputs.
+
+### Commands
+
+You can specify a custom list of terraform commands to execute instead of the 
+default set specified in [Execution](#execution).
+
+Each command has 5 required fields:
+  
+- `name`
+- `arguments`
+- `capture_output`
+- `output_file_name`
+- `has_strucutred_json_output`
+
+`name` (**required**) is a string only used for logging when reporting which 
+commands might have failed, so you should make it unique and descriptive enough
+that it can identify which part of the test failed when consulting the error 
+log.
+
+`arguments` (**required**) is a list of arguments that should be passed into the
+Terraform binary for this command. For example, `[plan, -out=plan_output]` would
+tell Terraform to perform a plan action and where to save the plan file.
+
+`capture_output` (**optional**, defaults to `false`) is a boolean that tells the
+equivalence tests to capture and save the output of this command as a golden 
+file for diffing or updating.
+
+`output_file_name` (**required** if `capture_output` is `true`) is a string 
+that sets the filename that should be used for the output. If `capture_output` 
+is `false`, this field is ignored.
+
+`streams_json_output` (**optional**, defaults to `false`) is a boolean
+that tells the equivalence tests that the output is in the "structured JSON" 
+format. Some Terraform commands, such as `terraform apply -json`, stream a list
+of individual JSON objects to the output. This form of output is not a valid
+JSON object when reading the output as a whole. When this value is true the 
+framework will convert the output into a valid JSON object by replacing any `\n`
+characters with `,` and putting the entire output in between `[` and `]`. If
+`capture_output` is `false`, this field is ignored.
+
+#### Examples
+
+The following example demonstrates how to replicate the default commands using 
+the custom `commands` entry in the test specification.
+
+```json
+{
+  "commands": [
+    {
+      "name": "init",
+      "arguments": ["init"],
+      "capture_output": false
+    },
+    {
+      "name": "plan",
+      "arguments": ["plan", "-out=equivalence_test_plan"],
+      "capture_output": false
+    },
+    {
+      "name": "apply",
+      "arguments": ["apply", "-json", "equivalence_test_plan"],
+      "capture_output": true,
+      "output_file_name": "apply.json",
+      "streams_json_output": true
+    },
+    {
+      "name": "show_state",
+      "arguments": ["show", "-json"],
+      "capture_output": true,
+      "output_file_name": "state.json",
+      "streams_json_output": false
+    },
+    {
+      "name": "show_plan",
+      "arguments": ["show", "-json", "equivalence_test_plan"],
+      "capture_output": true,
+      "output_file_name": "plan.json",
+      "streams_json_output": false
+    }
+  ]
+}
+```
