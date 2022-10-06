@@ -3,6 +3,9 @@ package cmd
 import (
 	"errors"
 	"flag"
+	"os"
+	"path"
+	"path/filepath"
 )
 
 // Flags is a helpful struct that contains the global flags for the equivalence
@@ -45,6 +48,17 @@ func ParseFlags(command string, args []string) (*Flags, error) {
 
 	if len(flags.TestingFilesDirectory) == 0 {
 		return nil, errors.New("--tests flag is required")
+	}
+
+	// Last thing, let's change the TerraformBinaryPath into an absolute path as
+	// we are messing around with the working directory later.
+	if !filepath.IsAbs(flags.TerraformBinaryPath) {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+
+		flags.TerraformBinaryPath = path.Join(wd, flags.TerraformBinaryPath)
 	}
 
 	return &flags, nil
