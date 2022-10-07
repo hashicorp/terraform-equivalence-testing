@@ -51,8 +51,10 @@ func ParseFlags(command string, args []string) (*Flags, error) {
 	}
 
 	// Last thing, let's change the TerraformBinaryPath into an absolute path as
-	// we are messing around with the working directory later.
-	if !filepath.IsAbs(flags.TerraformBinaryPath) {
+	// we are messing around with the working directory later. One exception is
+	// if the caller has asked to just execute the default Terraform system
+	// command/binary.
+	if !filepath.IsAbs(flags.TerraformBinaryPath) && flags.TerraformBinaryPath != "terraform" {
 		wd, err := os.Getwd()
 		if err != nil {
 			return nil, err
