@@ -1,10 +1,6 @@
 {
   "configuration": {
     "provider_config": {
-      "mock": {
-        "full_name": "registry.terraform.io/hashicorp/tfcoremock",
-        "name": "mock"
-      },
       "tfcoremock": {
         "full_name": "registry.terraform.io/hashicorp/tfcoremock",
         "name": "tfcoremock"

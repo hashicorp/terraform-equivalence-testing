@@ -13,19 +13,6 @@ Terraform will perform the following actions:
 
 Plan: 1 to add, 0 to change, 0 to destroy.
 
-Warning: Duplicate required provider
-
-  on main.tf line 3, in terraform:
-   3:     mock = {
-   4:       source = "hashicorp/tfcoremock"
-   5:     }
-
-Provider hashicorp/tfcoremock with the local name "mock" was implicitly
-required via a configuration block as "tfcoremock". The provider
-configuration block name must match the name used in required_providers.
-
-(and one more similar warning elsewhere)
-
 ─────────────────────────────────────────────────────────────────────────────
 
 Saved the plan to: equivalence_test_plan

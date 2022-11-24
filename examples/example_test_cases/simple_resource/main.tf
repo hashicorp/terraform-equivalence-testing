@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    mock = {
+    tfcoremock = {
       source = "hashicorp/tfcoremock"
     }
   }
