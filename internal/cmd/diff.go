@@ -112,20 +112,23 @@ func (cmd *diffCommand) Run(args []string) int {
 	cmd.ui.Output(fmt.Sprintf("Equivalence testing complete."))
 	cmd.ui.Output(fmt.Sprintf("\tAttempted %d test(s).", len(testCases)))
 
+	exitCode := 0
+
 	if successfulTests > 0 {
 		cmd.ui.Output(fmt.Sprintf("\t%d test(s) were successful.", successfulTests))
 	}
 
 	if testsWithDiffs > 0 {
+		exitCode = 2 // non-zero exit code to indicate diffs, but different from failed tests
 		cmd.ui.Output(fmt.Sprintf("\t%d test(s) had diffs.", testsWithDiffs))
 	}
 
 	if failedTests > 0 {
+		exitCode = 1 // failed tests should have a non-zero exit code
 		cmd.ui.Output(fmt.Sprintf("\t%d test(s) failed.", failedTests))
-		return 1
 	}
 
-	return 0
+	return exitCode
 }
 
 func (cmd *diffCommand) Synopsis() string {
