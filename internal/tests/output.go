@@ -32,6 +32,7 @@ var (
 		"plan.json": {
 			"terraform_version",
 			"prior_state.terraform_version",
+			"timestamp",
 		},
 		"state.json": {
 			"terraform_version",
