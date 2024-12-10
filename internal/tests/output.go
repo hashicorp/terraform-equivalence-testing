@@ -24,18 +24,56 @@ const (
 var (
 	// defaultFields is the set of fields that are ignored by default for any
 	// files by the given names.
-	defaultFields = map[string][]string{
+	defaultFields = map[string][][]strip.Step{
 		"apply.json": {
-			"0",
-			"*.@timestamp",
+
+			// The first message in the apply.json file is always the
+			// version information and other meta information.
+
+			strip.Field("0"),
+
+			// Remove the timestamp and hook.elapsed_seconds fields from the
+			// apply.json file. These will be different between runs and are not
+			// relevant to the test.
+
+			strip.Field("*.@timestamp"),
+			strip.Field("*.hook.elapsed_seconds"),
+
+			// Finally, remove the @message field from the apply_complete
+			// message. This contains information about how long the apply took
+			// and this is very flaky between runs.
+
+			{
+				{
+					Step: "*",
+					Filter: []strip.Filter{
+						{
+							Path:  []string{"type"},
+							Value: "apply_complete",
+						},
+					},
+				},
+				{
+					Step: "@message",
+				},
+			},
 		},
 		"plan.json": {
-			"terraform_version",
-			"prior_state.terraform_version",
-			"timestamp",
+
+			// Remove the terraform_version and timestamp fields from the plan
+			// these will both be different between runs and are not relevant to
+			// the test.
+
+			strip.Field("terraform_version"),
+			strip.Field("prior_state.terraform_version"),
+			strip.Field("timestamp"),
 		},
 		"state.json": {
-			"terraform_version",
+
+			// Remove the terraform_version field from the state, this will be
+			// different between runs and is not relevant to the test.
+
+			strip.Field("terraform_version"),
 		},
 	}
 )
@@ -62,9 +100,11 @@ func (output TestOutput) Files() (map[string]*files.File, error) {
 			continue
 		}
 
-		var ignoreFields []string
+		var ignoreFields [][]strip.Step
 		ignoreFields = append(ignoreFields, defaultFields[name]...)
-		ignoreFields = append(ignoreFields, output.Test.Specification.IgnoreFields[name]...)
+		for _, field := range output.Test.Specification.IgnoreFields[name] {
+			ignoreFields = append(ignoreFields, strip.Field(field))
+		}
 
 		stripped, err := strip.Strip(ignoreFields, contents)
 		if err != nil {

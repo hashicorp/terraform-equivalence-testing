@@ -13,12 +13,12 @@ func TestStripJson(t *testing.T) {
 	tcs := []struct {
 		input    interface{}
 		expected interface{}
-		fields   []string
+		fields   [][]Step
 	}{
 		{
 			input:    map[string]interface{}{},
 			expected: map[string]interface{}{},
-			fields:   []string{},
+			fields:   [][]Step{},
 		},
 		{
 			input: map[string]interface{}{
@@ -53,7 +53,7 @@ func TestStripJson(t *testing.T) {
 					},
 				},
 			},
-			fields: []string{},
+			fields: [][]Step{},
 		},
 		{
 			input: map[string]interface{}{
@@ -78,8 +78,8 @@ func TestStripJson(t *testing.T) {
 					"two": "two",
 				},
 			},
-			fields: []string{
-				"list",
+			fields: [][]Step{
+				Field("list"),
 			},
 		},
 		{
@@ -106,8 +106,8 @@ func TestStripJson(t *testing.T) {
 				},
 				"list": []interface{}{},
 			},
-			fields: []string{
-				"list.*",
+			fields: [][]Step{
+				Field("list.*"),
 			},
 		},
 		{
@@ -131,8 +131,8 @@ func TestStripJson(t *testing.T) {
 					},
 				},
 			},
-			fields: []string{
-				"map.one",
+			fields: [][]Step{
+				Field("map.one"),
 			},
 		},
 		{
@@ -151,8 +151,8 @@ func TestStripJson(t *testing.T) {
 			expected: map[string]interface{}{
 				"map": map[string]interface{}{},
 			},
-			fields: []string{
-				"map.*",
+			fields: [][]Step{
+				Field("map.*"),
 			},
 		},
 		{
@@ -177,8 +177,8 @@ func TestStripJson(t *testing.T) {
 					},
 				},
 			},
-			fields: []string{
-				"map.one.*",
+			fields: [][]Step{
+				Field("map.one.*"),
 			},
 		},
 		{
@@ -211,9 +211,9 @@ func TestStripJson(t *testing.T) {
 					},
 				},
 			},
-			fields: []string{
-				"map.one",
-				"list.*.one",
+			fields: [][]Step{
+				Field("map.one"),
+				Field("list.*.one"),
 			},
 		},
 		{
@@ -245,8 +245,8 @@ func TestStripJson(t *testing.T) {
 					},
 				},
 			},
-			fields: []string{
-				"map",
+			fields: [][]Step{
+				Field("map"),
 			},
 		},
 		{
@@ -280,9 +280,9 @@ func TestStripJson(t *testing.T) {
 					},
 				},
 			},
-			fields: []string{
-				"list.0.one",
-				"list.1.two",
+			fields: [][]Step{
+				Field("list.0.one"),
+				Field("list.1.two"),
 			},
 		},
 		{
@@ -298,8 +298,146 @@ func TestStripJson(t *testing.T) {
 					"two": "two",
 				},
 			},
-			fields: []string{
-				"other_map.one",
+			fields: [][]Step{
+				Field("other_map.one"),
+			},
+		},
+		{
+			input: []interface{}{
+				map[string]interface{}{
+					"value":  "one",
+					"filter": "true",
+				},
+				map[string]interface{}{
+					"value":  "two",
+					"filter": "false",
+				},
+				map[string]interface{}{
+					"value":  "three",
+					"filter": "true",
+				},
+				map[string]interface{}{
+					"value":  "four",
+					"filter": "false",
+				},
+			},
+			expected: []interface{}{
+				map[string]interface{}{
+					"value":  "two",
+					"filter": "false",
+				},
+				map[string]interface{}{
+					"value":  "four",
+					"filter": "false",
+				},
+			},
+			fields: [][]Step{
+				{
+					{
+						Step: wildcard,
+						Filter: []Filter{
+							{
+								Path:  []string{"filter"},
+								Value: "true",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			input: []interface{}{
+				map[string]interface{}{
+					"value":  "one",
+					"filter": "true",
+				},
+				map[string]interface{}{
+					"value":  "two",
+					"filter": "false",
+				},
+				map[string]interface{}{
+					"value":  "three",
+					"filter": "true",
+				},
+				map[string]interface{}{
+					"value":  "four",
+					"filter": "false",
+				},
+			},
+			expected: []interface{}{
+				map[string]interface{}{
+					"filter": "true",
+				},
+				map[string]interface{}{
+					"value":  "two",
+					"filter": "false",
+				},
+				map[string]interface{}{
+					"filter": "true",
+				},
+				map[string]interface{}{
+					"value":  "four",
+					"filter": "false",
+				},
+			},
+			fields: [][]Step{
+				{
+					{
+						Step: wildcard,
+						Filter: []Filter{
+							{
+								Path:  []string{"filter"},
+								Value: "true",
+							},
+						},
+					},
+					{
+						Step: "value",
+					},
+				},
+			},
+		},
+		{
+			input: []interface{}{
+				map[string]interface{}{
+					"value": "one",
+				},
+				map[string]interface{}{
+					"value": "two",
+				},
+				map[string]interface{}{
+					"value": "three",
+				},
+				map[string]interface{}{
+					"value": "four",
+				},
+			},
+			expected: []interface{}{
+				map[string]interface{}{},
+				map[string]interface{}{
+					"value": "two",
+				},
+				map[string]interface{}{
+					"value": "three",
+				},
+				map[string]interface{}{
+					"value": "four",
+				},
+			},
+			fields: [][]Step{
+				{
+					{
+						Step: wildcard,
+					},
+					{
+						Step: "value",
+						Filter: []Filter{
+							{
+								Value: "one",
+							},
+						},
+					},
+				},
 			},
 		},
 	}
