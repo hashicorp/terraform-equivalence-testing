@@ -6,8 +6,6 @@ package cmd
 import (
 	"errors"
 	"flag"
-	"os"
-	"path"
 	"path/filepath"
 )
 
@@ -58,14 +56,14 @@ func ParseFlags(command string, args []string) (*Flags, error) {
 	// if the caller has asked to just execute the default Terraform system
 	// command/binary.
 	if !filepath.IsAbs(flags.TerraformBinaryPath) && flags.TerraformBinaryPath != "terraform" {
-		wd, err := os.Getwd()
+		path, err := filepath.Abs(flags.TerraformBinaryPath)
 		if err != nil {
 			return nil, err
 		}
-
-		flags.TerraformBinaryPath = path.Join(wd, flags.TerraformBinaryPath)
+		flags.TerraformBinaryPath = path
 	}
 
+	// Make directory paths absolute, too
 	if !filepath.IsAbs(flags.GoldenFilesDirectory) {
 		path, err := filepath.Abs(flags.GoldenFilesDirectory)
 		if err != nil {
