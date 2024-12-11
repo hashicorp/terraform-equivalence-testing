@@ -66,5 +66,21 @@ func ParseFlags(command string, args []string) (*Flags, error) {
 		flags.TerraformBinaryPath = path.Join(wd, flags.TerraformBinaryPath)
 	}
 
+	if !filepath.IsAbs(flags.GoldenFilesDirectory) {
+		path, err := filepath.Abs(flags.GoldenFilesDirectory)
+		if err != nil {
+			return nil, err
+		}
+		flags.GoldenFilesDirectory = path
+	}
+
+	if !filepath.IsAbs(flags.TestingFilesDirectory) {
+		path, err := filepath.Abs(flags.TestingFilesDirectory)
+		if err != nil {
+			return nil, err
+		}
+		flags.TestingFilesDirectory = path
+	}
+
 	return &flags, nil
 }
