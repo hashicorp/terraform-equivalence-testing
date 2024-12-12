@@ -1,6 +1,6 @@
 module github.com/hashicorp/terraform-equivalence-testing
 
-go 1.18
+go 1.23
 
 require (
 	github.com/google/go-cmp v0.5.9
