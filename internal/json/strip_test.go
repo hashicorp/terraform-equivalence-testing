@@ -440,6 +440,49 @@ func TestStripJson(t *testing.T) {
 				},
 			},
 		},
+		{
+			input: []interface{}{
+				map[string]interface{}{
+					"value": "one",
+					"tags": map[string]interface{}{
+						"env": "prod",
+					},
+				},
+				map[string]interface{}{
+					"value": "two",
+					"tags": map[string]interface{}{
+						"env": "dev",
+					},
+				},
+				map[string]interface{}{
+					"value": "three",
+					"tags": map[string]interface{}{
+						"env": "prod",
+					},
+				},
+			},
+			expected: []interface{}{
+				map[string]interface{}{
+					"value": "two",
+					"tags": map[string]interface{}{
+						"env": "dev",
+					},
+				},
+			},
+			fields: [][]Step{
+				{
+					{
+						Step: wildcard,
+						Filter: []Filter{
+							{
+								Path:  []string{"tags", "env"},
+								Value: "prod",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for ix, tc := range tcs {
 		t.Run(fmt.Sprintf("%d", ix), func(t *testing.T) {
