@@ -1,6 +1,7 @@
 module github.com/hashicorp/terraform-equivalence-testing
 
 go 1.23
+toolchain go1.24.1
 
 require (
 	github.com/google/go-cmp v0.5.9
@@ -30,7 +31,7 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/zclconf/go-cty v1.11.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 )
