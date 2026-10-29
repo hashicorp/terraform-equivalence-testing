@@ -5,7 +5,8 @@
     "provider_config": {
       "tfcoremock": {
         "full_name": "registry.terraform.io/hashicorp/tfcoremock",
-        "name": "tfcoremock"
+        "name": "tfcoremock",
+        "version_constraint": "0.6.0-beta2"
       }
     },
     "root_module": {
