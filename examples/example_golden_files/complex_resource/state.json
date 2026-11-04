@@ -25,6 +25,10 @@
           "depends_on": [
             "data.tfcoremock_simple_resource.simple_resource"
           ],
+          "identity": {
+            "id": "d199d8ea-e8f8-4fb0-8276-3567a74d3db8"
+          },
+          "identity_schema_version": 0,
           "mode": "managed",
           "name": "complex_resource",
           "provider_name": "registry.terraform.io/hashicorp/tfcoremock",
